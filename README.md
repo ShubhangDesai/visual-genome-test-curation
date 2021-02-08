@@ -1,4 +1,5 @@
-# README
+# Visual Genome Test Set Curation
+Code used to curate the test set for the Visual Genome dataset.
 
 ## Overview
 
@@ -36,39 +37,39 @@ Below is the "psuedocode" for how you should run the various files to send a bat
 # Stage 1
 # -------
 do {
-		python launch.py --exp_name name --stage 1 --initial_launch --sandbox
-  	while (there are incomplete HITs) python dump.py --exp_name name --stage 1 --sandbox
-  	python knowledge.py --exp_name name --stage 1 --sandbox
+    python launch.py --exp_name name --stage 1 --initial_launch --sandbox
+    while (there are incomplete HITs) python dump.py --exp_name name --stage 1 --sandbox
+    python knowledge.py --exp_name name --stage 1 --sandbox
 } while (there are failed attention checks)
 
 do {
-		python launch.py --exp_name name --stage 1 --disagreement_launch --sandbox
-		while (there are incomplete HITs) python dump.py --exp_name name --stage 1 --sandbox
-		python knowledge.py --exp_name name --stage 1 --sandbox
+    python launch.py --exp_name name --stage 1 --disagreement_launch --sandbox
+    while (there are incomplete HITs) python dump.py --exp_name name --stage 1 --sandbox
+    python knowledge.py --exp_name name --stage 1 --sandbox
 } while (there are failed attention checks)
 
 
 # Stage 2
 # -------
 do {
-		python launch.py --exp_name name --stage 2 --initial_launch
-  	while (there are incomplete HITs) python dump.py --exp_name name --stage 2
-  	python knowledge.py --exp_name name --stage 2
+    python launch.py --exp_name name --stage 2 --initial_launch
+    while (there are incomplete HITs) python dump.py --exp_name name --stage 2
+    python knowledge.py --exp_name name --stage 2
 } while (there are failed attention checks)
 
 
 # Stage 3
 # -------
 do {
-		python launch.py --exp_name name --stage 3 --initial_launch
-  	while (there are incomplete HITs) python dump.py --exp_name name --stage 3
-  	python knowledge.py --exp_name name --stage 1
+    python launch.py --exp_name name --stage 3 --initial_launch
+    while (there are incomplete HITs) python dump.py --exp_name name --stage 3
+    python knowledge.py --exp_name name --stage 1
 } while (there are failed attention checks)
 
 do {
-		python launch.py --exp_name name --stage 3 --disagreement_launch
-		while (there are incomplete HITs) python dump.py --exp_name name --stage 3
-		python knowledge.py --exp_name name --stage 3
+    python launch.py --exp_name name --stage 3 --disagreement_launch
+    while (there are incomplete HITs) python dump.py --exp_name name --stage 3
+    python knowledge.py --exp_name name --stage 3
 } while (there are failed attention checks)
 ```
 
