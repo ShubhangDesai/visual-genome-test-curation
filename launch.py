@@ -11,21 +11,21 @@ def main(args):
 
     # Get HITs, rewards, and assignments
     if args.initial_launch:
-        data, rewards, assignments = stage.initial_launch.prepare_launch(args)
+        hits, rewards, assignments = stage.initial_launch.prepare_launch(args)
     elif args.disagreement_launch:
-        data, rewards, assignments = stage.disagreement_launch.prepare_launch(args)
+        hits, rewards, assignments = stage.disagreement_launch.prepare_launch(args)
 
     # Check that there's enough money
     cost = sum([r*a for r, a in zip(rewards, assignments)])
     assert interface.get_account_balance(args.sandbox) >= cost, 'Insufficient funds'
 
     # Confirm launch
-    print('Total cost for %d assignments across %d HITs: %0.2f' % (sum(assignments), len(data), cost))
+    print('Total cost for %d assignments across %d HITs: %0.2f' % (sum(assignments), len(hits), cost))
     print('Launch to %s?' % ('sandbox' if args.sandbox else 'production'))
     assert input() == 'y', 'Aborting'
 
     # Launch the HITs
-    hit_ids = stage.launch(data, rewards, assignments, args.sandbox)
+    hit_ids = stage.launch(hits, rewards, assignments, args.sandbox)
     print('HIT IDs: %s' % str(hit_ids))
 
     # Save the HIT IDs

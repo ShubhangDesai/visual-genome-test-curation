@@ -26,17 +26,15 @@ def main(args):
     # Update the knowledge for each image
     knowledge_file = utils.get_knowledge_file(args)
     for result in sucessful_results:
-        output = result['output'][0]
-        image_name = output['url'].split('/')[-1]
+        for output in result['output']:
+            image_name = output['url'].split('/')[-1]
 
-        image_knowledge = knowledge_file.get(image_name, {})
-        stage_knowledge = image_knowledge.get('stage_'+str(args.stage), {'hit_ids': []})
-        stage_knowledge['hit_ids'].append(result['hit_id'])
+            image_knowledge = knowledge_file.get(image_name, {})
+            stage_knowledge = image_knowledge.get('stage_'+str(args.stage), {})
 
-        updated_stage_knowledge = stage.update_knowledge(stage_knowledge, result['worker_id'], output)
-
-        image_knowledge['stage_'+str(args.stage)] = updated_stage_knowledge
-        knowledge_file[image_name] = image_knowledge
+            updated_stage_knowledge = stage.update_knowledge(stage_knowledge, output, result['worker_id'], result['hit_id'])
+            image_knowledge['stage_'+str(args.stage)] = updated_stage_knowledge
+            knowledge_file[image_name] = image_knowledge
 
     utils.update_most_recent_launch_with_approvals(approvals_list, args)
     utils.mark_most_recent_launch_as_known(args)

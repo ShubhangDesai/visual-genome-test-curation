@@ -1,6 +1,9 @@
 import utils
 
-reward_per_img = 0.5
+imgs_per_hit = 5
+reward_per_hit = 0.5
+
+get_hits_from_data = lambda imgs: [imgs[i:i+imgs_per_hit] for i in range(0, len(imgs), imgs_per_hit)]
 
 def prepare_launch(args):
     assert utils.most_recent_launch_is_done(args), 'You must finish dumping the launch HITs first'
@@ -12,7 +15,8 @@ def prepare_launch(args):
     data = []
     for datum in initial_data:
         image_name = datum['url'].split('/')[-1]
-        image_knowledge = knowledge[image_name]['stage_'+str(args.stage)]
+        relationship = '_'.join([datum['subject']['name'], datum['predicate'], datum['object']['name']])
+        image_knowledge = knowledge[image_name]['stage_1'][relationship]
 
         assert 'worker_1' in image_knowledge and 'worker_2' in image_knowledge, 'You must finish stage 1 initial launches first'
 
@@ -21,4 +25,8 @@ def prepare_launch(args):
 
     assert len(data) != 0, 'Stage 1 disagreement launch done'
 
-    return data, [reward_per_img for _ in data], [1 for _ in data]
+    hits = get_hits_from_data(data)
+    assignments = [1 for _ in hits]
+    rewards = [reward_per_hit for hit in hits]
+
+    return hits, rewards, assignments

@@ -3,8 +3,8 @@ import stage1.disagreement_launch
 
 from easyturk import interface
 
-def launch(data, rewards, assignments, sandbox):
-    hit_ids = interface.launch_specify_num_relationship(data, rewards, assignments, sandbox)
+def launch(hits, rewards, assignments, sandbox):
+    hit_ids = interface.launch_specify_num_relationship(hits, rewards, assignments, sandbox)
     return hit_ids
 
 def run_attention_checks(hits):
@@ -28,19 +28,25 @@ def aggregate(knowledge):
 
     return max(answers)
 
-def update_knowledge(knowledge, worker_id, result):
-    if 'worker_1' not in knowledge: worker = 'worker_1'
-    elif 'worker_2' not in knowledge: worker = 'worker_2'
+def update_knowledge(stage_knowledge, result, worker_id, hit_id):
+    relationship = '_'.join([result['subject']['name'], result['predicate'], result['object']['name']])
+    relationship_knowledge = stage_knowledge.get(relationship, {'hit_ids': []})
+    relationship_knowledge['hit_ids'].append(hit_id)
+
+    if 'worker_1' not in relationship_knowledge: worker = 'worker_1'
+    elif 'worker_2' not in relationship_knowledge: worker = 'worker_2'
     else:
-        assert is_disagreement(knowledge), 'Unknown error'
+        assert is_disagreement(relationship_knowledge), 'Unknown error'
+        assert 'worker_3' not in relationship_knowledge, 'Unknown error'
         worker = 'worker_3'
 
     worker_knowledge = {'worker_id': worker_id, 'answer': result['num_relationship']}
-    knowledge[worker] = worker_knowledge
+    relationship_knowledge[worker] = worker_knowledge
 
-    if worker == 'worker_2' and not is_disagreement(knowledge):
-        knowledge['final_answer'] = aggregate(knowledge)
+    if worker == 'worker_2' and not is_disagreement(relationship_knowledge):
+        relationship_knowledge['final_answer'] = aggregate(relationship_knowledge)
     elif worker == 'worker_3':
-        knowledge['final_answer'] = aggregate(knowledge)
+        relationship_knowledge['final_answer'] = aggregate(relationship_knowledge)
 
-    return knowledge
+    stage_knowledge[relationship] = relationship_knowledge
+    return stage_knowledge
