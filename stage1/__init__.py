@@ -18,15 +18,30 @@ def aggregate(knowledge):
     worker_2_answer = knowledge['worker_2']['answer']
     if 'worker_3' in knowledge:
         worker_3_answer = knowledge['worker_3']['answer']
-        worker_1_diff = abs(worker_1_answer - worker_3_answer)
-        worker_2_diff = abs(worker_2_answer - worker_3_answer)
+        worker_12_diff = abs(worker_1_answer - worker_2_answer)
+        worker_13_diff = abs(worker_1_answer - worker_3_answer)
+        worker_23_diff = abs(worker_2_answer - worker_3_answer)
 
-        closer_answer = worker_1_answer if worker_1_diff < worker_2_diff else worker_2_answer
-        answers = [worker_3_answer, closer_answer]
+        closer_answer = worker_1_answer if worker_13_diff < worker_23_diff else worker_2_answer
+        closer_answer = max([worker_1_answer, worker_2_answer]) if  worker_12_diff < min([worker_13_diff, worker_23_diff]) else closer_answer  
+        answer = closer_answer
+        
     else:
-        answers = [worker_1_answer, worker_2_answer]
+        answer = max([worker_1_answer, worker_2_answer])
 
-    return max(answers)
+    return answer
+
+    # if 'worker_3' in knowledge:
+    #     worker_3_answer = knowledge['worker_3']['answer']
+    #     worker_1_diff = abs(worker_1_answer - worker_3_answer)
+    #     worker_2_diff = abs(worker_2_answer - worker_3_answer)
+
+    #     closer_answer = worker_1_answer if worker_1_diff < worker_2_diff else worker_2_answer
+    #     answers = [worker_3_answer, closer_answer]
+    # else:
+    #     answers = [worker_1_answer, worker_2_answer]
+
+    # return max(answers)
 
 def update_knowledge(stage_knowledge, result, worker_id, hit_id):
     relationship = '_'.join([result['subject']['name'], result['predicate'], result['object']['name']])

@@ -19,30 +19,27 @@ def main(args):
     formatted_data = []
 
     for i in range(len(curated_test_data)):
-        if len(curated_test_data[i]['relationships']) == 100: # Remove
-            
-            img_url = curated_test_data[i]['url']
-            img_objects = curated_test_data[i]['objects']
-            # print(img_objects)
+        img_url = curated_test_data[i]['url']
+        img_objects = curated_test_data[i]['objects']
 
-            img_rels = set()
-            # Get relationships in image
-            for rel in curated_test_data[i]['relationships']:
-                print(rel)
-                sub = img_objects[rel['subject']]['name']
-                obj = img_objects[rel['object']]['name']
-                pred = rel['predicate']
-                rel = (sub, pred, obj)
-                img_rels.add(rel)
+        # Get relationships in image
+        img_rels = set()
+        for rel in curated_test_data[i]['relationships']:
+            sub = img_objects[rel['subject']]['name']
+            obj = img_objects[rel['object']]['name']
+            pred = rel['predicate']
+            rel = (sub, pred, obj)
+            img_rels.add(rel)
 
+        if len(img_rels) == 6: # REMOVE
             # Format relationships in image according to data reading
             for rel in img_rels:
+                print(rel)
                 sub_dict = {"name": rel[0]}
                 obj_dict = {"name": rel[2]}
                 entry = {"url": img_url, "predicate": rel[1], "subject": sub_dict, "object": obj_dict}
                 formatted_data.append(entry)
-                
-            break # Remove
+            break
 
     # Save and provide output
     utils.write_json(formatted_data, output_file)
@@ -62,7 +59,6 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     main(args)
-    # main()
 
 
 
