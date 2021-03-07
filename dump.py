@@ -9,8 +9,14 @@ def main(args):
 
     dump = utils.get_dump_file(args)
     incomplete_hits = sum(assignments)
+
+    # print(results)
     for hit_id, assignment in zip(hit_ids, assignments):
-        if hit_id not in results: continue
+        # print("Enter")
+        if hit_id not in results: 
+            # print("Leave 1")
+            continue
+        # print("Hit_id in results")
 
         hit_results = results[hit_id]
         if args.sandbox and assignment == 2: hit_results.append(hit_results[0])
@@ -18,9 +24,14 @@ def main(args):
         completed_assignments = len(hit_results)
 
         incomplete_hits -= completed_assignments
-        if hit_id in dump: continue
+        if hit_id in dump: # If hit already added
+            # print("Leave 2")
+            continue
 
-        if completed_assignments == assignment: dump[hit_id] = hit_results
+        # print(completed_assignments, assignment)
+        if completed_assignments == assignment: # worker already exists
+            # print("Add ")
+            dump[hit_id] = hit_results
 
     if incomplete_hits == 0:
         utils.mark_most_recent_launch_as_done(args)
@@ -28,7 +39,9 @@ def main(args):
     else:
         print('There are %d HITs still incomplete' % incomplete_hits)
 
+    # print("Dump: ", dump)
     utils.save_dump_file(dump, args)
+    # utils.save_dump_file(results, args)
 
 if __name__ == '__main__':
     args = utils.parse_args()

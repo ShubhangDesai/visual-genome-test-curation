@@ -11,13 +11,19 @@ def run_attention_checks(hits):
     return ['A3Q2AW4YWVN2IC']
 
 def is_disagreement(knowledge):
+    if (knowledge['worker_1']['answer'] is None and knowledge['worker_2']['answer'] is not None) or (knowledge['worker_1']['answer'] is None and knowledge['worker_2']['answer'] is not None):
+        return True 
+    elif (knowledge['worker_1']['answer'] is None and knowledge['worker_2']['answer'] is None):
+        return False
+
     return abs(knowledge['worker_1']['answer'] - knowledge['worker_2']['answer']) > 4
 
 def aggregate(knowledge):
-    worker_1_answer = knowledge['worker_1']['answer']
-    worker_2_answer = knowledge['worker_2']['answer']
+    worker_1_answer = knowledge['worker_1']['answer'] if knowledge['worker_1']['answer'] is not None else -10000
+    worker_2_answer = knowledge['worker_2']['answer'] if knowledge['worker_2']['answer'] is not None else -10000
+
     if 'worker_3' in knowledge:
-        worker_3_answer = knowledge['worker_3']['answer']
+        worker_3_answer = knowledge['worker_3']['answer'] if not None else -10000
         worker_12_diff = abs(worker_1_answer - worker_2_answer)
         worker_13_diff = abs(worker_1_answer - worker_3_answer)
         worker_23_diff = abs(worker_2_answer - worker_3_answer)
@@ -28,6 +34,8 @@ def aggregate(knowledge):
         
     else:
         answer = max([worker_1_answer, worker_2_answer])
+        if answer < 0: # Both were null
+            return None
 
     return answer
 

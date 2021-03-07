@@ -1,9 +1,10 @@
 import utils
 
-imgs_per_hit = 5
+tasks_per_hit = 5
+# reward_per_hit = 0.1
 reward_per_hit = 0.5
 
-get_hits_from_data = lambda imgs: [imgs[i:i+imgs_per_hit] for i in range(0, len(imgs), imgs_per_hit)]
+get_hits_from_data = lambda tasks: [tasks[i:i+tasks_per_hit] for i in range(0, len(tasks), tasks_per_hit)]
 
 def prepare_relaunch(args):
     initial_data = utils.get_initial_data(args)

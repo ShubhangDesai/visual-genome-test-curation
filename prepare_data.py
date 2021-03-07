@@ -15,10 +15,11 @@ def main(args):
 
     curated_test_data = utils.read_json(input_file)
 
-    i = 1
     formatted_data = []
-
-    for i in range(len(curated_test_data)):
+    lower_lim, upper_lim = 5, 15
+    num_rels = 0
+    # for i in range(len(curated_test_data)):
+    for i in range(lower_lim, upper_lim):
         img_url = curated_test_data[i]['url']
         img_objects = curated_test_data[i]['objects']
 
@@ -31,17 +32,16 @@ def main(args):
             rel = (sub, pred, obj)
             img_rels.add(rel)
 
-        if len(img_rels) == 6: # REMOVE
-            # Format relationships in image according to data reading
-            for rel in img_rels:
-                print(rel)
-                sub_dict = {"name": rel[0]}
-                obj_dict = {"name": rel[2]}
-                entry = {"url": img_url, "predicate": rel[1], "subject": sub_dict, "object": obj_dict}
-                formatted_data.append(entry)
-            break
+        # Format relationships in image according to data reading
+        for rel in img_rels:
+            sub_dict = {"name": rel[0]}
+            obj_dict = {"name": rel[2]}
+            entry = {"url": img_url, "predicate": rel[1], "subject": sub_dict, "object": obj_dict}
+            formatted_data.append(entry)
+            num_rels += 1
 
     # Save and provide output
+    print("Number of relationships to verify: ", num_rels)
     utils.write_json(formatted_data, output_file)
     # print("Saved data with [{}] tasks".format(len(formatted_data)))
 
