@@ -11,7 +11,8 @@ def run_attention_checks(hits):
     return ['A3Q2AW4YWVN2IC']
 
 def is_disagreement(knowledge):
-    if (knowledge['worker_1']['answer'] is None and knowledge['worker_2']['answer'] is not None) or (knowledge['worker_1']['answer'] is None and knowledge['worker_2']['answer'] is not None):
+    # NEED TO FIX IS_DISAGREEMENT
+    if (knowledge['worker_1']['answer'] is None and knowledge['worker_2']['answer'] is not None) or (knowledge['worker_1']['answer'] is not None and knowledge['worker_2']['answer'] is None):
         return True 
     elif (knowledge['worker_1']['answer'] is None and knowledge['worker_2']['answer'] is None):
         return False
@@ -38,18 +39,6 @@ def aggregate(knowledge):
             return None
 
     return answer
-
-    # if 'worker_3' in knowledge:
-    #     worker_3_answer = knowledge['worker_3']['answer']
-    #     worker_1_diff = abs(worker_1_answer - worker_3_answer)
-    #     worker_2_diff = abs(worker_2_answer - worker_3_answer)
-
-    #     closer_answer = worker_1_answer if worker_1_diff < worker_2_diff else worker_2_answer
-    #     answers = [worker_3_answer, closer_answer]
-    # else:
-    #     answers = [worker_1_answer, worker_2_answer]
-
-    # return max(answers)
 
 def update_knowledge(stage_knowledge, result, worker_id, hit_id):
     relationship = '_'.join([result['subject']['name'], result['predicate'], result['object']['name']])

@@ -16,8 +16,9 @@ def main(args):
     curated_test_data = utils.read_json(input_file)
 
     formatted_data = []
-    lower_lim, upper_lim = 5, 15
+    lower_lim, upper_lim = 0, 20 #5, 15
     num_rels = 0
+
     # for i in range(len(curated_test_data)):
     for i in range(lower_lim, upper_lim):
         img_url = curated_test_data[i]['url']

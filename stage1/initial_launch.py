@@ -1,7 +1,8 @@
 import utils
 
-tasks_per_hit = 5
+# tasks_per_hit = 5
 # reward_per_hit = 0.1
+tasks_per_hit = 40 # 10, 20
 reward_per_hit = 0.5
 
 get_hits_from_data = lambda tasks: [tasks[i:i+tasks_per_hit] for i in range(0, len(tasks), tasks_per_hit)]
