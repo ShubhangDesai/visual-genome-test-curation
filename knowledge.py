@@ -1,11 +1,33 @@
-import stage1, stage2, stage3
+import stages
 import utils
+
+def update_knowledge(stage, stage_knowledge, result, worker_id, hit_id):
+    task_name = result['task_name']
+    task_knowledge = stage_knowledge.get(task_name, {'hit_ids': []})
+    task_knowledge['hit_ids'].append(hit_id)
+
+    if 'worker_1' not in task_knowledge: worker = 'worker_1'
+    elif 'worker_2' not in task_knowledge: worker = 'worker_2'
+    else:
+        assert stage.is_disagreement(task_knowledge), 'Unknown error'
+        assert 'worker_3' not in task_knowledge, 'Unknown error'
+        worker = 'worker_3'
+
+    worker_knowledge = {'worker_id': worker_id, 'answer': [o['rect'] for o in result['objects']]} # TODO
+    task_knowledge[worker] = worker_knowledge
+
+    if worker == 'worker_2' and not stage.is_disagreement(task_knowledge):
+        task_knowledge['final_answer'] = stage.aggregate(task_knowledge)
+    elif worker == 'worker_3':
+        task_knowledge['final_answer'] = stage.aggregate(task_knowledge)
+
+    stage_knowledge[task_name] = task_knowledge
+    return stage_knowledge
 
 def main(args):
     # Get launch stage
-    if args.stage == 1: stage = stage1
-    elif args.stage == 2: stage = stage2
-    elif args.stage == 3: stage = stage3
+    if args.stage == 1: stage = stages.stage1
+    elif args.stage == 2: stage = stages.stage2
 
     assert not utils.most_recent_launch_is_known(args), 'Launch knowledge already extracted'
 
@@ -32,7 +54,7 @@ def main(args):
             image_knowledge = knowledge_file.get(image_name, {})
             stage_knowledge = image_knowledge.get('stage_'+str(args.stage), {})
 
-            updated_stage_knowledge = stage.update_knowledge(stage_knowledge, output, result['worker_id'], result['hit_id'])
+            updated_stage_knowledge = update_knowledge(stage, stage_knowledge, output, result['worker_id'], result['hit_id'])
             image_knowledge['stage_'+str(args.stage)] = updated_stage_knowledge
             knowledge_file[image_name] = image_knowledge
 

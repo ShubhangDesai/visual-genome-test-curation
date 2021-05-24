@@ -1,19 +1,18 @@
-import stage1, stage2, stage3
+import stages
 import utils
 
 from easyturk import interface
 
 def main(args):
     # Get launch stage
-    if args.stage == 1: stage = stage1
-    elif args.stage == 2: stage = stage2
-    elif args.stage == 3: stage = stage3
+    if args.stage == 1: stage = stages.stage1
+    elif args.stage == 2: stage = stages.stage2
 
     # Get HITs, rewards, and assignments
     if args.initial_launch:
-        hits, rewards, assignments = stage.initial_launch.prepare_launch(args)
+        hits, rewards, assignments = stages.initial_launch.prepare_launch(args)
     elif args.disagreement_launch:
-        hits, rewards, assignments = stage.disagreement_launch.prepare_launch(args)
+        hits, rewards, assignments = stages.disagreement_launch.prepare_launch(args)
 
     # Check that there's enough money
     cost = sum([r*a for r, a in zip(rewards, assignments)])
@@ -29,7 +28,6 @@ def main(args):
     print('HIT IDs: %s' % str(hit_ids))
 
     # Save the HIT IDs
-    #if not args.sandbox:
     utils.save_launch_to_launch_file(hit_ids, assignments, cost, args)
 
 if __name__ == '__main__':
