@@ -1,18 +1,18 @@
-import stages
+import stage1, stage2
 import utils
 
 from easyturk import interface
 
 def main(args):
     # Get launch stage
-    if args.stage == 1: stage = stages.stage1
-    elif args.stage == 2: stage = stages.stage2
+    if args.stage == 1: stage = stage1
+    elif args.stage == 2: stage = stage2
 
     # Get HITs, rewards, and assignments
     if args.initial_launch:
-        hits, rewards, assignments = stages.initial_launch.prepare_launch(args)
+        hits, rewards, assignments = stage.initial_launch.prepare_launch(args)
     elif args.disagreement_launch:
-        hits, rewards, assignments = stages.disagreement_launch.prepare_launch(args)
+        hits, rewards, assignments = stage.disagreement_launch.prepare_launch(args)
 
     # Check that there's enough money
     cost = sum([r*a for r, a in zip(rewards, assignments)])

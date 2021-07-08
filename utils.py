@@ -121,11 +121,11 @@ def parse_args(launch=False):
     return parser.parse_args()
 
 def get_hits_from_tasks(tasks, args):
-    tasks_per_hit = [5][args.stage]
+    tasks_per_hit = [10, 10][args.stage-1]
     return [tasks[i:i+tasks_per_hit] for i in range(0, len(tasks), tasks_per_hit)]
 
 def get_reward(args):
-    return [0.5][args.stage]
+    return [1, 0.5][args.stage-1]
 
 def filter_out_failed_workers(hits, failed_workers):
     failed_workers = set(failed_workers)

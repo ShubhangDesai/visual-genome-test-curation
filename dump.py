@@ -5,10 +5,11 @@ from easyturk import interface
 
 def main(args):
     hit_ids, assignments = utils.get_most_recent_hit_ids_and_assignments(args)
+    print(hit_ids, assignments)
     results = interface.fetch_completed_hits(hit_ids, sandbox=args.sandbox, approve=False)
 
     dump = utils.get_dump_file(args)
-    incomplete_hits = sum(assignments)
+    incomplete_assignments = sum(assignments)
     for hit_id, assignment in zip(hit_ids, assignments):
         if hit_id not in results: continue
 
@@ -17,16 +18,16 @@ def main(args):
 
         completed_assignments = len(hit_results)
 
-        incomplete_hits -= completed_assignments
+        incomplete_assignments -= completed_assignments
         if hit_id in dump: continue
 
         if completed_assignments == assignment: dump[hit_id] = hit_results
 
-    if incomplete_hits == 0:
+    if incomplete_assignments == 0:
         utils.mark_most_recent_launch_as_done(args)
-        print('HITs completed')
+        print('All assignments completed')
     else:
-        print('There are %d HITs still incomplete' % incomplete_hits)
+        print('There are %d assignments still incomplete' % incomplete_assignments)
 
     utils.save_dump_file(dump, args)
 
