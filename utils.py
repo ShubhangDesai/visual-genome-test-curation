@@ -1,4 +1,5 @@
 import os, json, argparse, datetime
+from PIL import ImageDraw
 
 ## BASIC READ FUNCTIONS
 
@@ -24,14 +25,14 @@ def get_dump_file(args):
 
     return read_json(filepath)
 
-
-
-## READ FUNCTIONS W/ LOGIC
-
 def get_knowledge_file(args):
     filepath = os.path.join('data', args.exp_name, 'images_knowledge.json')
 
     return read_json(filepath)
+
+
+
+## READ FUNCTIONS W/ LOGIC
 
 def get_most_recent_hit_ids_and_assignments(args):
     launches = get_launch_file(args)['launches']
@@ -105,6 +106,38 @@ def mark_most_recent_launch_as_known(args):
 
 
 
+# STAGE UTIL FUNCTIONS
+
+def is_relaunch(args):
+    if get_launch_file(args) == {}: return False
+
+    assert most_recent_launch_is_done(args), 'You must finish dumping the launch HITs first'
+    assert most_recent_launch_is_known(args), 'You must extract knowledge data first'
+
+    return True
+
+def get_stage_2_tasks(args):
+    knowledge_file = get_knowledge_file(args)
+
+    tasks = []
+    for image_name, image_knowledge in knowledge_file.items():
+        stage_1_knowledge = image_knowledge['stage_1']
+        for relationship in get_relationships(stage_1_knowledge):
+            subjects, objects = get_subjects_and_objects(relationship, stage_1_knowledge)
+            subject_name, predicate_name, object_name = relationship.split('_')
+            for i, subject in enumerate(subjects):
+                for j, object in enumerate(objects):
+                    subject['name'], object['name'] = subject_name, object_name
+                    url = 'https://images.cocodataset.org/test2017/' + image_name # TODO: fix this!!
+                    task_name = '_'.join([subject_name, predicate_name, object_name, str(i), str(j)])
+                    task = {'url': url, 'subject': subject, 'object': object, 'predicate': predicate_name, 'task_name': task_name}
+
+                    tasks.append(task)
+
+    return tasks
+
+
+
 ## MISC FUNCTIONS
 
 def parse_args(launch=False):
@@ -143,6 +176,34 @@ def filter_out_failed_workers(hits, failed_workers):
         approvals_list.append(hit_approvals)
 
     return successful_results, approvals_list
+
+def get_relationships(stage_1_knowledge):
+    return set(['_'.join(k.split('_')[:-1]) for k in stage_1_knowledge.keys()])
+
+def get_subjects_and_objects(relationship, stage_1_knowledge):
+    subject_knowledge = stage_1_knowledge[relationship + '_subject']
+    object_knowledge = stage_1_knowledge[relationship + '_object']
+    subjects, objects, i = [], [], 1
+    while True:
+        worker = 'worker_' + str(i)
+        if worker not in subject_knowledge: break
+
+        subjects.extend(subject_knowledge[worker]['answer'])
+        objects.extend(object_knowledge[worker]['answer'])
+        i += 1
+
+    subject_name, _, object_name = relationship.split('_')
+    for i in range(len(subjects)): subjects[i]['name'] = subject_name
+    for i in range(len(objects)): objects[i]['name'] = object_name
+
+    return subjects, objects
+
+def draw_rects(img, objs, color):
+    draw = ImageDraw.Draw(img)
+    for box in objs:
+        draw.rectangle([box['x'], box['y'], box['x'] + box['w'], box['y'] + box['h']], outline=color, width=3)
+
+    return img
 
 def datetime_converter(o):
     if isinstance(o, datetime.datetime):

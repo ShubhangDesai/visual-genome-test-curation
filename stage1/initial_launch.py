@@ -1,6 +1,6 @@
 import utils
 
-def get_relaunch_tasks(tasks, args):
+def get_relaunch_hits(tasks, args):
     knowledge = utils.get_knowledge_file(args)
 
     remaining_tasks = []
@@ -22,28 +22,12 @@ def get_relaunch_tasks(tasks, args):
 
     return hits, assignments
 
-def is_relaunch(args):
-    if utils.get_launch_file(args) == {}: return False
-
-    assert utils.most_recent_launch_is_done(args), 'You must finish dumping the launch HITs first'
-    assert utils.most_recent_launch_is_known(args), 'You must extract knowledge data first'
-
-    return True
-
 def get_tasks(args):
     initial_data = utils.get_initial_data(args)
 
     tasks = []
     for datum in initial_data:
         name_prefix = '_'.join([datum['subject']['name'], datum['predicate'], datum['object']['name']])
-
-        #task_1, task_2 = datum.copy(), datum.copy()
-        #task_1['task_name'], task_2['task_name'] = name_prefix + '_subject', name_prefix + '_object'
-        #task_1['main'], task_2['main'] = datum['subject']['name'], datum['object']['name']
-        #task_1['num_objects'], task_2['num_objects'] = 1, 1
-
-        #tasks.append(task_1)
-        #tasks.append(task_2)
 
         for task, main in [(datum.copy(), 'subject'), (datum.copy(), 'object')]:
             task['task_name'] = name_prefix + '_' + main
@@ -56,7 +40,7 @@ def get_tasks(args):
 
 def prepare_launch(args):
     tasks = get_tasks(args)
-    if is_relaunch(args):
+    if utils.is_relaunch(args):
         hits, assignments = get_relaunch_hits(tasks, args)
     else:
         hits = utils.get_hits_from_tasks(tasks, args)
