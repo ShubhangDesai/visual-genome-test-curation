@@ -5,7 +5,7 @@ def get_relaunch_hits(tasks, args):
 
     remaining_tasks = []
     for task in tasks:
-        image_name = task['url'].split('/')[-1]
+        image_name = task['url']
         if image_name not in knowledge:
             remaining_tasks.append(task)
             continue
@@ -39,7 +39,7 @@ def get_tasks(args):
             task['task_name'] = task_name
             task['main'] = datum[main]['name']
 
-            image_name = datum['url'].split('/')[-1]
+            image_name = datum['url']
             if stage_1_results != {}:
                 task['objects'] = [{'rect': rect} for rect in stage_1_results[image_name][task_name]]
             else:

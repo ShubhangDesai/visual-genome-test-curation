@@ -30,7 +30,7 @@ def main(args):
 
     imgs, relationships = [], []
     for image_name, image_knowledge in knowledge_file.items():
-        img = Image.open(image_name.replace('jpg', 'jpeg'))
+        img = Image.open(image_name.split('/')[-1].replace('jpg', 'jpeg'))
 
         stage_1_knowledge  = image_knowledge['stage_1']
         for relationship in utils.get_relationships(stage_1_knowledge):

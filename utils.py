@@ -222,7 +222,7 @@ def get_stage_2_tasks(args):
             subject_name, predicate_name, object_name, main = task_name.split('_')
             subject, object = {'name': subject_name}, {'name': object_name}
             main = subject_name if main == 'subject' else object_name
-            url = 'https://images.cocodataset.org/test2017/' + image_name # TODO: fix this!!
+            url = image_name
 
             task = {'url': url, 'subject': subject, 'object': object, 'predicate': predicate_name, 'main': main, 'task_name': task_name}
             task['objects'] = [{'rect': rect} for rect in task_knowledge[worker]['answer']]
@@ -245,7 +245,7 @@ def get_stage_3_tasks(args):
             for i, subject in enumerate(subjects):
                 for j, object in enumerate(objects):
                     subject['name'], object['name'] = subject_name, object_name
-                    url = 'https://images.cocodataset.org/test2017/' + image_name # TODO: fix this!!
+                    url = image_name
                     task_name = '_'.join([subject_name, predicate_name, object_name, str(i), str(j)])
                     task = {'url': url, 'subject': subject, 'object': object, 'predicate': predicate_name, 'task_name': task_name}
 

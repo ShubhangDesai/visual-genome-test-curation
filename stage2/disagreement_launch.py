@@ -9,7 +9,7 @@ def prepare_launch(args):
 
     remaining_tasks, num_incomplete = [], 0
     for task in tasks:
-        image_name = task['url'].split('/')[-1]
+        image_name = task['url']
         task_knowledge = knowledge[image_name]['stage_'+str(args.stage)][task['task_name']]
         round_knowledge = task_knowledge['round_' + str(round_num)]
 

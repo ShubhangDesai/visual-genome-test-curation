@@ -27,7 +27,7 @@ def main(args):
     knowledge_file = utils.get_knowledge_file(args)
     for result in sucessful_results:
         for output in result['output']:
-            image_name = output['url'].split('/')[-1]
+            image_name = output['url']
 
             image_knowledge = knowledge_file.get(image_name, {})
             stage_knowledge = image_knowledge.get('stage_'+str(args.stage), {})

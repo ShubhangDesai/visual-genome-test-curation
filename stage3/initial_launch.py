@@ -5,7 +5,7 @@ def get_relaunch_hits(tasks, args):
 
     one_assignment_tasks, two_assignment_tasks = [], []
     for task in tasks:
-        image_name = task['url'].split('/')[-1]
+        image_name = task['url']
         if image_name not in knowledge:
             two_assignment_tasks.append(task)
             continue

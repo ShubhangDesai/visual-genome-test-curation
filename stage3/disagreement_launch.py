@@ -8,7 +8,7 @@ def prepare_launch(args):
 
     remaining_tasks = []
     for task in tasks:
-        image_name = task['url'].split('/')[-1]
+        image_name = task['url']
         task_knowledge = knowledge[image_name]['stage_'+str(args.stage)][task['task_name']]
 
         assert 'worker_1' in task_knowledge and 'worker_2' in task_knowledge, 'You must finish stage 3 initial launches first'
