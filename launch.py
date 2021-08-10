@@ -1,4 +1,4 @@
-import stage1, stage2
+import stage1, stage2, stage3
 import utils
 
 from easyturk import interface
@@ -7,6 +7,7 @@ def main(args):
     # Get launch stage
     if args.stage == 1: stage = stage1
     elif args.stage == 2: stage = stage2
+    elif args.stage == 3: stage = stage3
 
     # Get HITs, rewards, and assignments
     if args.initial_launch:

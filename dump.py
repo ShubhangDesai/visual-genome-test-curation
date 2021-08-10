@@ -5,7 +5,6 @@ from easyturk import interface
 
 def main(args):
     hit_ids, assignments = utils.get_most_recent_hit_ids_and_assignments(args)
-    print(hit_ids, assignments)
     results = interface.fetch_completed_hits(hit_ids, sandbox=args.sandbox, approve=False)
 
     dump = utils.get_dump_file(args)

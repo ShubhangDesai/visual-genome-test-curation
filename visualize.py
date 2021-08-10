@@ -43,11 +43,11 @@ def main(args):
             all_rels_img = utils.draw_rects(all_rels_img, objects, 'green')
             imgs[-1].append(all_rels_img)
 
-            stage_2_knowledge = image_knowledge['stage_2']
+            stage_3_knowledge = image_knowledge['stage_3']
             for i, subject in enumerate(subjects):
                 for j, object in enumerate(objects):
                     task_name = '_'.join([relationship, str(i), str(j)])
-                    if not stage_2_knowledge[task_name]['final_answer']: continue
+                    if not stage_3_knowledge[task_name]['final_answer']: continue
 
                     rel_img = utils.draw_rects(img.copy(), [subject], 'red')
                     rel_img = utils.draw_rects(rel_img, [object], 'green')

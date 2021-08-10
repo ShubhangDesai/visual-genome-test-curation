@@ -1,10 +1,11 @@
-import stage1, stage2
+import stage1, stage2, stage3
 import utils
 
 def main(args):
     # Get launch stage
     if args.stage == 1: stage = stage1
     elif args.stage == 2: stage = stage2
+    elif args.stage == 3: stage = stage3
 
     assert not utils.most_recent_launch_is_known(args), 'Launch knowledge already extracted'
 
@@ -31,7 +32,7 @@ def main(args):
             image_knowledge = knowledge_file.get(image_name, {})
             stage_knowledge = image_knowledge.get('stage_'+str(args.stage), {})
 
-            updated_stage_knowledge = stage.update_knowledge(stage, stage_knowledge, output, result['worker_id'], result['hit_id'])
+            updated_stage_knowledge = stage.update_knowledge(stage, stage_knowledge, output, result['worker_id'], result['hit_id'], args)
             image_knowledge['stage_'+str(args.stage)] = updated_stage_knowledge
             knowledge_file[image_name] = image_knowledge
 
