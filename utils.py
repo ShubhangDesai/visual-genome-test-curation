@@ -58,6 +58,12 @@ def get_round(args):
 
     return round
 
+def get_stage_2_round(args):
+    filepath = os.path.join('data', args.exp_name, 'stage_2_launches.json')
+    round = read_json(filepath).get('round', 0)
+
+    return round
+
 def get_stage_1_results(args):
     knowledge_file = get_knowledge_file(args)
 
@@ -125,13 +131,13 @@ def save_launch_to_launch_file(hit_ids, assignments, cost, args):
     launch_data['cost'] += cost
 
     if args.stage == 1 or args.stage == 2:
-        if args.stage == 1 and 'round' not in launch_data: launch_data['round'] = 1
-        if 'round_done' not in launch_data: launch_data['round_done'] = False
+        if 'round' not in launch_data:
+            launch_data['round'] = 1
+            launch_data['round_done'] = False
 
         if launch_data['round_done']:
+            launch_data['round'] += 1
             launch_data['round_done'] = False
-            if args.stage == 1:
-                launch_data['round'] += 1
 
     launch_dict = {'hit_ids': hit_ids, 'assignments': assignments, 'initial': args.initial_launch}
     launch_data['launches'].append(launch_dict)
@@ -193,7 +199,7 @@ def stage_2_round_is_done(args):
 def is_relaunch(args):
     if get_launch_file(args) == {}: return False
 
-    if args.stage == 1 and stage_1_round_is_done(args):
+    if args.stage == 1 and stage_1_round_is_done(args) and get_round(args) == get_stage_2_round(args):
         assert stage_2_round_is_done(args), 'You must finish stage 2 round %d first' % get_round(args)
 
         return False
