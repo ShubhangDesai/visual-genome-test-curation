@@ -41,13 +41,13 @@ def get_most_recent_hit_ids_and_assignments(args):
     return most_recent_launch['hit_ids'], most_recent_launch['assignments']
 
 def most_recent_launch_is_done(args):
-    launches = get_launch_file(args)['launches']
+    launches = get_launch_file(args).get('launches', [{}])
     most_recent_launch = launches[-1]
 
     return most_recent_launch.get('done', False)
 
 def most_recent_launch_is_known(args):
-    launches = get_launch_file(args)['launches']
+    launches = get_launch_file(args).get('launches', [{}])
     most_recent_launch = launches[-1]
 
     return most_recent_launch.get('known', False)
@@ -63,6 +63,12 @@ def get_stage_2_round(args):
     round = read_json(filepath).get('round', 0)
 
     return round
+
+def all_rounds_are_done(args):
+    filepath = os.path.join('data', args.exp_name, 'stage_2_launches.json')
+    all_rounds_done = read_json(filepath).get('all_rounds_done', False)
+
+    return all_rounds_done
 
 def get_stage_1_results(args):
     knowledge_file = get_knowledge_file(args)
@@ -173,14 +179,20 @@ def mark_current_stage_round_as_done(args):
     filepath = os.path.join('data', args.exp_name, 'stage_%d_launches.json' % args.stage)
     write_json(launch_data, filepath)
 
-    #if args.stage == 1: mark_stage_2_round_as_incomplete(args)
-
 def mark_stage_2_round_as_incomplete(args):
     filepath = os.path.join('data', args.exp_name, 'stage_2_launches.json')
     stage_2_data = read_json(filepath)
 
     if stage_2_data != {}:
         stage_2_data['round_done'] = False
+        write_json(stage_2_data, filepath)
+
+def mark_all_rounds_as_done(args):
+    filepath = os.path.join('data', args.exp_name, 'stage_2_launches.json')
+    stage_2_data = read_json(filepath)
+
+    if stage_2_data != {}:
+        stage_2_data['all_rounds_done'] = True
         write_json(stage_2_data, filepath)
 
 
@@ -201,11 +213,9 @@ def is_relaunch(args):
 
     if args.stage == 1 and stage_1_round_is_done(args) and get_round(args) == get_stage_2_round(args):
         assert stage_2_round_is_done(args), 'You must finish stage 2 round %d first' % get_round(args)
-
         return False
-    elif args.stage == 2 and stage_2_round_is_done(args):
-        assert stage_1_round_is_done(args), 'You must finish stage 2 round %d first' % get_round(args)
 
+    if args.stage == 2 and stage_2_round_is_done(args) and get_round(args) != get_stage_2_round(args):
         return False
 
     assert most_recent_launch_is_done(args), 'You must finish dumping the launch HITs first'
@@ -215,6 +225,8 @@ def is_relaunch(args):
 
 def get_stage_2_tasks(args):
     knowledge_file = get_knowledge_file(args)
+    assert knowledge_file != {}, 'You much complete stage 1 first'
+
     round = get_round(args)
 
     tasks = []
@@ -241,6 +253,7 @@ def get_stage_2_tasks(args):
 
 def get_stage_3_tasks(args):
     knowledge_file = get_knowledge_file(args)
+    assert knowledge_file != {}, 'You much complete all rounds of stages 1 and 2 first'
 
     tasks = []
     for image_name, image_knowledge in knowledge_file.items():
@@ -306,17 +319,6 @@ def get_relationships(stage_1_knowledge):
 def get_subjects_and_objects(relationship, stage_1_knowledge):
     subject_knowledge = stage_1_knowledge[relationship + '_subject']
     object_knowledge = stage_1_knowledge[relationship + '_object']
-
-    # while True:
-    #     # TODO: assumes number of rounds for subject/object tasks are the same,
-    #     # which is not necessarily true; fix this
-    #
-    #     worker = 'worker_' + str(i)
-    #     if worker not in subject_knowledge: break
-    #
-    #     subjects.extend(subject_knowledge[worker]['answer'])
-    #     objects.extend(object_knowledge[worker]['answer'])
-    #     i += 1
 
     subjects, objects = [], []
     for l, knowledge in [(subjects, subject_knowledge), (objects, object_knowledge)]:

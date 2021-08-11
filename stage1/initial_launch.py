@@ -53,6 +53,10 @@ def get_tasks(args):
 
 def prepare_launch(args):
     tasks = get_tasks(args)
+    if len(tasks) == 0:
+        assert utils.all_rounds_are_done(args), 'Unknown error'
+        assert False, 'All images exhaustively labeled. Proceed to stage 3.'
+        
     if utils.is_relaunch(args):
         hits, assignments = get_relaunch_hits(tasks, args)
     else:

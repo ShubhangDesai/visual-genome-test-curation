@@ -30,6 +30,8 @@ def get_relaunch_hits(tasks, args):
     return hits, assignments
 
 def prepare_launch(args):
+    assert utils.all_rounds_are_done(args), 'You must complete all rounds of stages 1 and 2 first'
+    
     tasks = utils.get_stage_3_tasks(args)
     if utils.is_relaunch(args):
         hits, assignments = get_relaunch_hits(tasks, args)
