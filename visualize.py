@@ -32,22 +32,23 @@ def main(args):
     for image_name, image_knowledge in knowledge_file.items():
         img = Image.open(image_name.split('/')[-1].replace('jpg', 'jpeg'))
 
-        stage_1_knowledge  = image_knowledge['stage_1']
+        stage_1_knowledge = image_knowledge['stage_1']
+        stage_2_knowledge = image_knowledge['stage_2']
         for relationship in utils.get_relationships(stage_1_knowledge):
             imgs.append([])
             relationships.append(relationship)
 
-            subjects, objects = utils.get_subjects_and_objects(relationship, stage_1_knowledge)
+            subjects, objects = utils.get_subjects_and_objects(relationship, stage_1_knowledge, stage_2_knowledge)
 
             all_rels_img = utils.draw_rects(img.copy(), subjects, 'red')
             all_rels_img = utils.draw_rects(all_rels_img, objects, 'green')
             imgs[-1].append(all_rels_img)
 
-            stage_3_knowledge = image_knowledge['stage_3']
+            stage_4_knowledge = image_knowledge['stage_4']
             for i, subject in enumerate(subjects):
                 for j, object in enumerate(objects):
                     task_name = '_'.join([relationship, str(i), str(j)])
-                    if not stage_3_knowledge[task_name]['final_answer']: continue
+                    if not stage_4_knowledge[task_name]['final_answer']: continue
 
                     rel_img = utils.draw_rects(img.copy(), [subject], 'red')
                     rel_img = utils.draw_rects(rel_img, [object], 'green')

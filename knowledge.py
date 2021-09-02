@@ -1,4 +1,4 @@
-import stage1, stage2, stage3
+import stage1, stage2, stage3, stage4
 import utils
 
 def main(args):
@@ -6,6 +6,7 @@ def main(args):
     if args.stage == 1: stage = stage1
     elif args.stage == 2: stage = stage2
     elif args.stage == 3: stage = stage3
+    elif args.stage == 4: stage = stage4
 
     assert not utils.most_recent_launch_is_known(args), 'Launch knowledge already extracted'
 

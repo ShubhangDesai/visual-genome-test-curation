@@ -11,13 +11,13 @@ def get_relaunch_hits(tasks, args):
             continue
 
         task_knowledge = knowledge[image_name]['stage_'+str(args.stage)][task['task_name']]
-        if 'worker_'+str(utils.get_round(args)) in task_knowledge: continue
+        if 'worker_'+str(utils.get_overall_round(args)) in task_knowledge: continue
 
         remaining_tasks.append(task)
 
     if len(remaining_tasks) == 0:
         utils.mark_current_stage_round_as_done(args)
-        assert False, 'Stage 1 round %d complete. Proceed to stage 2 to see if another round is needed.' % utils.get_round(args)
+        assert False, 'Stage 1 round %d complete. Proceed to stage 2.' % utils.get_overall_round(args)
 
     hits = utils.get_hits_from_tasks(remaining_tasks, args)
     assignments = [1 for _ in hits]
@@ -28,7 +28,7 @@ def get_tasks(args):
     initial_data = utils.get_initial_data(args)
 
     stage_1_results = utils.get_stage_1_results(args)
-    stage_2_results = utils.get_stage_2_results(args)
+    stage_3_results = utils.get_stage_3_results(args)
 
     tasks = []
     for datum in initial_data:
@@ -41,12 +41,12 @@ def get_tasks(args):
 
             image_name = datum['url']
             if stage_1_results != {}:
-                task['objects'] = [{'rect': rect} for rect in stage_1_results[image_name][task_name]]
+                task['objects'] = stage_1_results[image_name][task_name]
             else:
-                task['objects'] = [{'rect': None}]
+                task['objects'] = []
             task['num_objects'] = max(1, len(task['objects']))
 
-            if stage_2_results == {} or not stage_2_results[image_name][task_name]:
+            if stage_3_results == {} or not stage_3_results[image_name][task_name]:
                 tasks.append(task)
 
     return tasks
@@ -55,8 +55,8 @@ def prepare_launch(args):
     tasks = get_tasks(args)
     if len(tasks) == 0:
         assert utils.all_rounds_are_done(args), 'Unknown error'
-        assert False, 'All images exhaustively labeled. Proceed to stage 3.'
-        
+        assert False, 'All images exhaustively labeled. Proceed to stage 4.'
+
     if utils.is_relaunch(args):
         hits, assignments = get_relaunch_hits(tasks, args)
     else:

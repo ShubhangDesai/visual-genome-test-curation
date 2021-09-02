@@ -1,4 +1,4 @@
-import stage1, stage2, stage3
+import stage1, stage2, stage3, stage4
 import utils
 
 from easyturk import interface
@@ -8,6 +8,7 @@ def main(args):
     if args.stage == 1: stage = stage1
     elif args.stage == 2: stage = stage2
     elif args.stage == 3: stage = stage3
+    elif args.stage == 4: stage = stage4
 
     # Get HITs, rewards, and assignments
     if args.initial_launch:
@@ -30,6 +31,10 @@ def main(args):
 
     # Save the HIT IDs
     utils.save_launch_to_launch_file(hit_ids, assignments, cost, args)
+
+    # Update round information
+    if args.stage != 4:
+        utils.update_round_info(args)
 
 if __name__ == '__main__':
     args = utils.parse_args(launch=True)

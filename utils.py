@@ -20,6 +20,18 @@ def get_launch_file(args):
 
     return read_json(filepath)
 
+def get_round_info(args):
+    filepath = os.path.join('data', args.exp_name, 'round_info.json')
+    round_info = read_json(filepath)
+
+    if round_info == {}:
+        round_info = {'overall_round': 0, 'all_rounds_done': False}
+        for stage in range(1, 4, 1):
+            stage_str = 'stage_' + str(stage)
+            round_info[stage_str] = {'round': 0, 'done': True}
+
+    return round_info
+
 def get_dump_file(args):
     filepath = os.path.join('data', args.exp_name, 'amt_dump.json')
 
@@ -52,23 +64,17 @@ def most_recent_launch_is_known(args):
 
     return most_recent_launch.get('known', False)
 
-def get_round(args):
-    filepath = os.path.join('data', args.exp_name, 'stage_1_launches.json')
-    round = read_json(filepath).get('round', 1)
-
-    return round
+def get_overall_round(args):
+    return get_round_info(args)['overall_round']
 
 def get_stage_2_round(args):
-    filepath = os.path.join('data', args.exp_name, 'stage_2_launches.json')
-    round = read_json(filepath).get('round', 0)
+    return get_round_info(args)['stage_2']['round']
 
-    return round
+def get_stage_3_round(args):
+    return get_round_info(args)['stage_3']['round']
 
 def all_rounds_are_done(args):
-    filepath = os.path.join('data', args.exp_name, 'stage_2_launches.json')
-    all_rounds_done = read_json(filepath).get('all_rounds_done', False)
-
-    return all_rounds_done
+    return get_round_info(args)['all_rounds_done']
 
 def get_stage_1_results(args):
     knowledge_file = get_knowledge_file(args)
@@ -89,26 +95,26 @@ def get_stage_1_results(args):
 
     return stage_1_results
 
-def get_stage_2_results(args):
+def get_stage_3_results(args):
     knowledge_file = get_knowledge_file(args)
 
-    stage_2_results = {}
+    stage_3_results = {}
     for image_name, image_knowledge in knowledge_file.items():
-        if 'stage_2' not in image_knowledge: continue
+        if 'stage_3' not in image_knowledge: continue
 
-        stage_2_knowledge = image_knowledge['stage_2']
+        stage_3_knowledge = image_knowledge['stage_3']
         simplified_knowledge = {}
 
-        for task_name, task_knowledge in stage_2_knowledge.items():
+        for task_name, task_knowledge in stage_3_knowledge.items():
             rounds = [int(k.split('_')[-1]) for k in task_knowledge.keys() if 'round' in k]
             latest_round = sorted(rounds)[-1]
 
             latest_answer = task_knowledge['round_' + str(latest_round)]['final_answer']
             simplified_knowledge[task_name] = latest_answer
 
-        stage_2_results[image_name] = simplified_knowledge
+        stage_3_results[image_name] = simplified_knowledge
 
-    return stage_2_results
+    return stage_3_results
 
 
 ## BASIC WRITE FUNCTIONS
@@ -136,20 +142,23 @@ def save_launch_to_launch_file(hit_ids, assignments, cost, args):
     if 'cost' not in launch_data: launch_data['cost'] = 0
     launch_data['cost'] += cost
 
-    if args.stage == 1 or args.stage == 2:
-        if 'round' not in launch_data:
-            launch_data['round'] = 1
-            launch_data['round_done'] = False
-
-        if launch_data['round_done']:
-            launch_data['round'] += 1
-            launch_data['round_done'] = False
-
     launch_dict = {'hit_ids': hit_ids, 'assignments': assignments, 'initial': args.initial_launch}
     launch_data['launches'].append(launch_dict)
 
     filepath = os.path.join('data', args.exp_name, 'stage_%d_launches.json' % args.stage)
     write_json(launch_data, filepath)
+
+def update_round_info(args):
+    round_info = get_round_info(args)
+
+    stage_str = 'stage_%d' % args.stage
+    if round_info[stage_str]['done']:
+        round_info[stage_str]['round'] += 1
+        round_info[stage_str]['done'] = False
+        round_info['overall_round'] = max(round_info['overall_round'], round_info[stage_str]['round'])
+
+    filepath = os.path.join('data', args.exp_name, 'round_info.json')
+    write_json(round_info, filepath)
 
 def mark_most_recent_launch_as_done(args):
     launch_data = get_launch_file(args)
@@ -173,34 +182,35 @@ def mark_most_recent_launch_as_known(args):
     write_json(launch_data, filepath)
 
 def mark_current_stage_round_as_done(args):
-    launch_data = get_launch_file(args)
-    launch_data['round_done'] = True
+    round_info = get_round_info(args)
+    round_info['stage_%d' % args.stage]['done'] = True
 
-    filepath = os.path.join('data', args.exp_name, 'stage_%d_launches.json' % args.stage)
-    write_json(launch_data, filepath)
+    filepath = os.path.join('data', args.exp_name, 'round_info.json')
+    write_json(round_info, filepath)
 
-def mark_stage_2_round_as_incomplete(args):
-    filepath = os.path.join('data', args.exp_name, 'stage_2_launches.json')
-    stage_2_data = read_json(filepath)
+def mark_stage_3_round_as_incomplete(args):
+    assert False
 
-    if stage_2_data != {}:
-        stage_2_data['round_done'] = False
-        write_json(stage_2_data, filepath)
+    filepath = os.path.join('data', args.exp_name, 'stage_3_launches.json')
+    stage_3_data = read_json(filepath)
+
+    if stage_3_data != {}:
+        stage_3_data['round_done'] = False
+        write_json(stage_3_data, filepath)
 
 def mark_all_rounds_as_done(args):
-    filepath = os.path.join('data', args.exp_name, 'stage_2_launches.json')
-    stage_2_data = read_json(filepath)
+    round_info = get_round_info(args)
+    round_info['all_rounds_done'] = True
 
-    if stage_2_data != {}:
-        stage_2_data['all_rounds_done'] = True
-        write_json(stage_2_data, filepath)
+    filepath = os.path.join('data', args.exp_name, 'round_info.json')
+    write_json(round_info, filepath)
 
 
 # STAGE UTIL FUNCTIONS
 
 def stage_round_is_done(stage, args):
-    filepath = os.path.join('data', args.exp_name, 'stage_%d_launches.json' % stage)
-    return read_json(filepath).get('round_done', False)
+    round_info = get_round_info(args)
+    return round_info['stage_' + str(stage)]['done']
 
 def stage_1_round_is_done(args):
     return stage_round_is_done(1, args)
@@ -208,14 +218,22 @@ def stage_1_round_is_done(args):
 def stage_2_round_is_done(args):
     return stage_round_is_done(2, args)
 
+def stage_3_round_is_done(args):
+    return stage_round_is_done(3, args)
+
 def is_relaunch(args):
     if get_launch_file(args) == {}: return False
 
-    if args.stage == 1 and stage_1_round_is_done(args) and get_round(args) == get_stage_2_round(args):
-        assert stage_2_round_is_done(args), 'You must finish stage 2 round %d first' % get_round(args)
+    if args.stage == 1 and stage_1_round_is_done(args) and get_overall_round(args) == get_stage_3_round(args):
+        assert stage_3_round_is_done(args), 'You must finish stage 3 round %d first' % get_overall_round(args)
         return False
 
-    if args.stage == 2 and stage_2_round_is_done(args) and get_round(args) != get_stage_2_round(args):
+    if args.stage == 2 and stage_2_round_is_done(args) and get_overall_round(args) != get_stage_2_round(args):
+        assert stage_1_round_is_done(args), 'You must finish stage 3 round %d first' % get_overall_round(args)
+        return False
+
+    if args.stage == 3 and stage_3_round_is_done(args) and get_overall_round(args) != get_stage_3_round(args):
+        assert stage_2_round_is_done(args), 'You must finish stage 3 round %d first' % get_overall_round(args)
         return False
 
     assert most_recent_launch_is_done(args), 'You must finish dumping the launch HITs first'
@@ -225,16 +243,46 @@ def is_relaunch(args):
 
 def get_stage_2_tasks(args):
     knowledge_file = get_knowledge_file(args)
-    assert knowledge_file != {}, 'You much complete stage 1 first'
+    assert knowledge_file != {}, 'Knowledge file is empty'
 
-    round = get_round(args)
+    round = get_overall_round(args)
+    worker = 'worker_' + str(round)
+    round_str = 'round_' + str(round)
 
     tasks = []
     for image_name, image_knowledge in knowledge_file.items():
         stage_1_knowledge = image_knowledge['stage_1']
+        stage_2_knowledge = image_knowledge['stage_2']
 
         for task_name, task_knowledge in stage_1_knowledge.items():
-            worker = 'worker_' + str(round)
+            if worker not in task_knowledge: continue
+
+            subject_name, predicate_name, object_name, main = task_name.split('_')
+            main = subject_name if main == 'subject' else object_name
+            url = image_name
+
+            for i, point in enumerate(task_knowledge[worker]['answer']):
+                new_task_name = task_name + '_' + str(i)
+                if new_task_name in stage_2_knowledge: continue
+
+                task = {'url': url, 'name': main, 'x': point['x'], 'y': point['y'], 'num_objects': 1, 'task_name': new_task_name}
+                tasks.append(task)
+
+    return tasks
+
+def get_stage_3_tasks(args):
+    knowledge_file = get_knowledge_file(args)
+    assert knowledge_file != {}, 'Knowledge file is empty'
+
+    round = get_overall_round(args)
+    worker = 'worker_' + str(round)
+
+    tasks = []
+    for image_name, image_knowledge in knowledge_file.items():
+        stage_1_knowledge = image_knowledge['stage_1']
+        stage_2_knowledge = image_knowledge['stage_2']
+
+        for task_name, task_knowledge in stage_1_knowledge.items():
             if worker not in task_knowledge: continue
 
             subject_name, predicate_name, object_name, main = task_name.split('_')
@@ -242,24 +290,32 @@ def get_stage_2_tasks(args):
             main = subject_name if main == 'subject' else object_name
             url = image_name
 
-            task = {'url': url, 'subject': subject, 'object': object, 'predicate': predicate_name, 'main': main, 'task_name': task_name}
-            task['objects'] = [{'rect': rect} for rect in task_knowledge[worker]['answer']]
-            task['num_objects'] = len(task['objects'])
+            task = {'url': url, 'subject': subject, 'object': object, 'predicate': predicate_name, 'main': main, 'task_name': task_name, 'objects': []}
+            for i in range(len(task_knowledge[worker]['answer'])):
+                point_knowledge = stage_2_knowledge[task_name + '_' + str(i)]
+                rounds = [k for k in point_knowledge.keys() if 'round' in k]
+                assert len(rounds) == 1
 
+                rect = point_knowledge[rounds[0]]['final_answer']
+                task['objects'].append({'rect': rect})
+
+            task['num_objects'] = len(task['objects'])
             tasks.append(task)
 
     return tasks
 
 
-def get_stage_3_tasks(args):
+def get_stage_4_tasks(args):
     knowledge_file = get_knowledge_file(args)
-    assert knowledge_file != {}, 'You much complete all rounds of stages 1 and 2 first'
+    assert knowledge_file != {}, 'Knowledge file is empty'
 
     tasks = []
     for image_name, image_knowledge in knowledge_file.items():
         stage_1_knowledge = image_knowledge['stage_1']
+        stage_2_knowledge = image_knowledge['stage_2']
+
         for relationship in get_relationships(stage_1_knowledge):
-            subjects, objects = get_subjects_and_objects(relationship, stage_1_knowledge)
+            subjects, objects = get_subjects_and_objects(relationship, stage_1_knowledge, stage_2_knowledge)
             subject_name, predicate_name, object_name = relationship.split('_')
             for i, subject in enumerate(subjects):
                 for j, object in enumerate(objects):
@@ -279,7 +335,7 @@ def get_stage_3_tasks(args):
 def parse_args(launch=False):
     parser = argparse.ArgumentParser()
     parser.add_argument('--exp_name', type=str, required=True)
-    parser.add_argument('--stage', type=int, required=True, choices=[1,2,3])
+    parser.add_argument('--stage', type=int, required=True, choices=[1,2,3,4])
     parser.add_argument('--sandbox', action='store_true')
 
     if launch:
@@ -290,11 +346,11 @@ def parse_args(launch=False):
     return parser.parse_args()
 
 def get_hits_from_tasks(tasks, args):
-    tasks_per_hit = [10, 10, 10][args.stage-1]
+    tasks_per_hit = [10, 10, 10, 10][args.stage-1]
     return [tasks[i:i+tasks_per_hit] for i in range(0, len(tasks), tasks_per_hit)]
 
 def get_reward(args):
-    return [1, 0.5, 0.5][args.stage-1]
+    return [0.5, 0.5, 0.5, 0.5][args.stage-1]
 
 def filter_out_failed_workers(hits, failed_workers):
     failed_workers = set(failed_workers)
@@ -316,16 +372,23 @@ def filter_out_failed_workers(hits, failed_workers):
 def get_relationships(stage_1_knowledge):
     return set(['_'.join(k.split('_')[:-1]) for k in stage_1_knowledge.keys()])
 
-def get_subjects_and_objects(relationship, stage_1_knowledge):
+def get_subjects_and_objects(relationship, stage_1_knowledge, stage_2_knowledge):
     subject_knowledge = stage_1_knowledge[relationship + '_subject']
     object_knowledge = stage_1_knowledge[relationship + '_object']
 
     subjects, objects = [], []
-    for l, knowledge in [(subjects, subject_knowledge), (objects, object_knowledge)]:
+    for l, knowledge, main in [(subjects, subject_knowledge, '_subject_'), (objects, object_knowledge, '_object_')]:
         rounds = [int(k.split('_')[-1]) for k in knowledge.keys() if 'worker' in k]
         latest_round = sorted(rounds)[-1]
+        points = knowledge['worker_'+str(latest_round)]['answer']
 
-        l.extend(knowledge['worker_'+str(latest_round)]['answer'])
+        for i in range(len(points)):
+            point_knowledge = stage_2_knowledge[relationship + main + str(i)]
+            rounds = [k for k in point_knowledge.keys() if 'round' in k]
+            assert len(rounds) == 1
+
+            rect = point_knowledge[rounds[0]]['final_answer']
+            l.append(rect)
 
     subject_name, _, object_name = relationship.split('_')
     for i in range(len(subjects)): subjects[i]['name'] = subject_name
