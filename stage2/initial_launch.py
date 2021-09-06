@@ -32,7 +32,7 @@ def get_relaunch_hits(tasks, args):
     return hits, assignments
 
 def prepare_launch(args):
-    assert utils.stage_1_round_is_done(args), 'You must finish stage 2 round %d first' % utils.get_overall_round(args)
+    assert utils.stage_1_round_is_done(args), 'You must finish stage 1 round %d first' % utils.get_overall_round(args)
 
     tasks = utils.get_stage_2_tasks(args)
     if utils.is_relaunch(args):

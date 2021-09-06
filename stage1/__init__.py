@@ -7,7 +7,7 @@ def launch(hits, rewards, assignments, sandbox):
     return hit_ids
 
 def run_attention_checks(hits):
-    return ['AU3NU1RYO2FVB']
+    return []
 
 def update_knowledge(stage, stage_knowledge, result, worker_id, hit_id, args):
     task_name = result['task_name']

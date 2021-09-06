@@ -252,7 +252,7 @@ def get_stage_2_tasks(args):
     tasks = []
     for image_name, image_knowledge in knowledge_file.items():
         stage_1_knowledge = image_knowledge['stage_1']
-        stage_2_knowledge = image_knowledge['stage_2']
+        stage_2_knowledge = image_knowledge.get('stage_2', {})
 
         for task_name, task_knowledge in stage_1_knowledge.items():
             if worker not in task_knowledge: continue

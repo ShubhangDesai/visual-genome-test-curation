@@ -21,7 +21,7 @@ def get_relaunch_hits(tasks, args):
         else:
             two_assignment_tasks.append(task)
 
-    assert len(one_assignment_tasks) + len(two_assignment_tasks) != 0, 'Stage 3 round %d initial launch done' % round_num
+    assert len(one_assignment_tasks) + len(two_assignment_tasks) != 0, 'Stage 2 round %d initial launch done' % round_num
 
     one_assignment_hits = utils.get_hits_from_tasks(one_assignment_tasks, args)
     two_assignment_hits = utils.get_hits_from_tasks(two_assignment_tasks, args)
@@ -32,7 +32,7 @@ def get_relaunch_hits(tasks, args):
     return hits, assignments
 
 def prepare_launch(args):
-    assert utils.stage_1_round_is_done(args), 'You must finish stage 3 round %d first' % utils.get_overall_round(args)
+    assert utils.stage_1_round_is_done(args), 'You must finish stage 2 round %d first' % utils.get_overall_round(args)
 
     tasks = utils.get_stage_3_tasks(args)
     if utils.is_relaunch(args):

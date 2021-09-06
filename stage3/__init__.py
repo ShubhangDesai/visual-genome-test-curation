@@ -1,4 +1,4 @@
-import stage2.initial_launch, stage2.disagreement_launch
+import stage3.initial_launch, stage3.disagreement_launch
 from easyturk import interface
 import utils
 
