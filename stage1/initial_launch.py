@@ -28,6 +28,7 @@ def get_tasks(args):
     initial_data = utils.get_initial_data(args)
 
     stage_1_results = utils.get_stage_1_results(args)
+    stage_2_results = utils.get_stage_2_results(args)
     stage_3_results = utils.get_stage_3_results(args)
 
     tasks = []
@@ -41,9 +42,9 @@ def get_tasks(args):
 
             image_name = datum['url']
             if stage_1_results != {}:
-                task['objects'] = stage_1_results[image_name][task_name]
+                task['objects'] = [{**obj, **{'prev': True}} for obj in stage_1_results[image_name][task_name]]
             else:
-                task['objects'] = []
+                task['objects'], task['boxes'] = [], []
             task['num_objects'] = max(1, len(task['objects']))
 
             if stage_3_results == {} or not stage_3_results[image_name][task_name]:

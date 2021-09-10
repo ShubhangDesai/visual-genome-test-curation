@@ -95,6 +95,25 @@ def get_stage_1_results(args):
 
     return stage_1_results
 
+def get_stage_2_results(args):
+    knowledge_file = get_knowledge_file(args)
+
+    stage_2_results = {}
+    for image_name, image_knowledge in knowledge_file.items():
+        stage_2_knowledge = image_knowledge['stage_2']
+        simplified_knowledge = {}
+
+        for task_name, task_knowledge in stage_2_knowledge.items():
+            rounds = [int(k.split('_')[-1]) for k in task_knowledge.keys() if 'round' in k]
+            latest_round = sorted(rounds)[-1]
+
+            box = task_knowledge['round_' + str(latest_round)]['final_answer']
+            simplified_knowledge[task_name] = box
+
+        stage_2_results[image_name] = simplified_knowledge
+
+    return stage_2_results
+
 def get_stage_3_results(args):
     knowledge_file = get_knowledge_file(args)
 
@@ -263,7 +282,12 @@ def get_stage_2_tasks(args):
 
             for i, point in enumerate(task_knowledge[worker]['answer']):
                 new_task_name = task_name + '_' + str(i)
-                if new_task_name in stage_2_knowledge: continue
+                if new_task_name in stage_2_knowledge:
+                    point_knowledge = stage_2_knowledge[new_task_name]
+                    rounds = [k for k in point_knowledge.keys() if 'round' in k]
+                    assert len(rounds) == 1
+
+                    if 'final_answer' in point_knowledge[rounds[0]]: continue
 
                 task = {'url': url, 'name': main, 'x': point['x'], 'y': point['y'], 'num_objects': 1, 'task_name': new_task_name}
                 tasks.append(task)

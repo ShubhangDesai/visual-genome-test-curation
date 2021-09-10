@@ -31,11 +31,17 @@ def is_disagreement(knowledge):
     return iou < 0.8
 
 def get_bb_average(bb1, bb2):
-    return bb1
+    avg_x, avg_y = (bb1['x'] + bb2['x']) // 2, (bb1['y'] + bb2['y']) // 2
+    avg_w = (bb1['x'] + bb1['w'] + bb2['x'] + bb2['w']) // 2 - avg_x
+    avg_h = (bb1['y'] + bb1['h'] + bb2['y'] + bb2['h']) // 2 - avg_y
+
+    avg_bb = {'x': avg_x, 'y': avg_y, 'w': avg_w, 'h': avg_h}
+    return avg_bb
 
 def aggregate(knowledge):
     bb1, bb2 = knowledge['worker_1']['answer'], knowledge['worker_2']['answer']
     if 'worker_3' in knowledge:
+        bb3 = knowledge['worker_3']['answer']
         ious = [get_iou(bb1, bb2), get_iou(bb1, bb3), get_iou(bb2, bb3)]
 
         if max(ious) == ious[0]: answer = get_bb_average(bb1, bb2)

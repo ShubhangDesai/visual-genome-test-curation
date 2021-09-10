@@ -16,8 +16,6 @@ def main(args):
     elif args.disagreement_launch:
         hits, rewards, assignments = stage.disagreement_launch.prepare_launch(args)
 
-    hits, rewards, assignments = hits[-1:], rewards[-1:], assignments[-1:]
-
     # Check that there's enough money
     cost = sum([r*a for r, a in zip(rewards, assignments)])
     assert interface.get_account_balance(args.sandbox) >= cost, 'Insufficient funds'

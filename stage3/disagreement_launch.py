@@ -13,7 +13,7 @@ def prepare_launch(args):
         task_knowledge = knowledge[image_name]['stage_'+str(args.stage)][task['task_name']]
         round_knowledge = task_knowledge['round_' + str(round_num)]
 
-        assert 'worker_1' in round_knowledge and 'worker_2' in round_knowledge, 'You must finish stage 2 initial launches first'
+        assert 'worker_1' in round_knowledge and 'worker_2' in round_knowledge, 'You must finish stage 3 initial launches first'
 
         if 'final_answer' not in round_knowledge:
             remaining_tasks.append(task)
