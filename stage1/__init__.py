@@ -16,7 +16,8 @@ def update_knowledge(stage, stage_knowledge, result, worker_id, hit_id, args):
 
     worker = 'worker_'+str(utils.get_overall_round(args))
 
-    worker_knowledge = {'worker_id': worker_id, 'answer': result['objects']}
+    answer = 'dne' if result['dne'] else result['objects']
+    worker_knowledge = {'worker_id': worker_id, 'answer': answer}
     task_knowledge[worker] = worker_knowledge
 
     stage_knowledge[task_name] = task_knowledge

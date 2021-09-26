@@ -95,24 +95,24 @@ def get_stage_1_results(args):
 
     return stage_1_results
 
-def get_stage_2_results(args):
-    knowledge_file = get_knowledge_file(args)
-
-    stage_2_results = {}
-    for image_name, image_knowledge in knowledge_file.items():
-        stage_2_knowledge = image_knowledge['stage_2']
-        simplified_knowledge = {}
-
-        for task_name, task_knowledge in stage_2_knowledge.items():
-            rounds = [int(k.split('_')[-1]) for k in task_knowledge.keys() if 'round' in k]
-            latest_round = sorted(rounds)[-1]
-
-            box = task_knowledge['round_' + str(latest_round)]['final_answer']
-            simplified_knowledge[task_name] = box
-
-        stage_2_results[image_name] = simplified_knowledge
-
-    return stage_2_results
+# def get_stage_2_results(args):
+#     knowledge_file = get_knowledge_file(args)
+#
+#     stage_2_results = {}
+#     for image_name, image_knowledge in knowledge_file.items():
+#         stage_2_knowledge = image_knowledge['stage_2']
+#         simplified_knowledge = {}
+#
+#         for task_name, task_knowledge in stage_2_knowledge.items():
+#             rounds = [int(k.split('_')[-1]) for k in task_knowledge.keys() if 'round' in k]
+#             latest_round = sorted(rounds)[-1]
+#
+#             box = task_knowledge['round_' + str(latest_round)]['final_answer']
+#             simplified_knowledge[task_name] = box
+#
+#         stage_2_results[image_name] = simplified_knowledge
+#
+#     return stage_2_results
 
 def get_stage_3_results(args):
     knowledge_file = get_knowledge_file(args)
@@ -275,6 +275,7 @@ def get_stage_2_tasks(args):
 
         for task_name, task_knowledge in stage_1_knowledge.items():
             if worker not in task_knowledge: continue
+            if task_knowledge[worker]['answer'] == 'dne': continue
 
             subject_name, predicate_name, object_name, main = task_name.split('_')
             main = subject_name if main == 'subject' else object_name
@@ -303,11 +304,13 @@ def get_stage_3_tasks(args):
 
     tasks = []
     for image_name, image_knowledge in knowledge_file.items():
+        if 'stage_2' not in image_knowledge: continue
         stage_1_knowledge = image_knowledge['stage_1']
         stage_2_knowledge = image_knowledge['stage_2']
 
         for task_name, task_knowledge in stage_1_knowledge.items():
             if worker not in task_knowledge: continue
+            if task_knowledge[worker]['answer'] == 'dne': continue
 
             subject_name, predicate_name, object_name, main = task_name.split('_')
             subject, object = {'name': subject_name}, {'name': object_name}
@@ -335,6 +338,7 @@ def get_stage_4_tasks(args):
 
     tasks = []
     for image_name, image_knowledge in knowledge_file.items():
+        if 'stage_2' not in image_knowledge: continue
         stage_1_knowledge = image_knowledge['stage_1']
         stage_2_knowledge = image_knowledge['stage_2']
 
@@ -374,7 +378,7 @@ def get_hits_from_tasks(tasks, args):
     return [tasks[i:i+tasks_per_hit] for i in range(0, len(tasks), tasks_per_hit)]
 
 def get_reward(args):
-    return [0.5, 0.5, 0.5, 0.5][args.stage-1]
+    return [0.3, 0.5, 0.2, 0.1][args.stage-1]
 
 def filter_out_failed_workers(hits, failed_workers):
     failed_workers = set(failed_workers)
@@ -405,6 +409,7 @@ def get_subjects_and_objects(relationship, stage_1_knowledge, stage_2_knowledge)
         rounds = [int(k.split('_')[-1]) for k in knowledge.keys() if 'worker' in k]
         latest_round = sorted(rounds)[-1]
         points = knowledge['worker_'+str(latest_round)]['answer']
+        if points == 'dne': continue
 
         for i in range(len(points)):
             point_knowledge = stage_2_knowledge[relationship + main + str(i)]
